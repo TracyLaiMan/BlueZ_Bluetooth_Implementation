@@ -80,6 +80,10 @@ struct btd_adv_client {
 	uint32_t flags;
 	struct bt_ad *data;
 	struct bt_ad *scan;
+    uint8_t *adv_data;
+    uint8_t *scan_rsp;
+    uint8_t adv_data_len;
+    uint8_t scan_rsp_len;
 	uint8_t instance;
 };
 
@@ -787,18 +791,36 @@ static int refresh_adv(struct btd_adv_client *client, mgmt_request_func_t func)
 
 	flags |= client->flags;
 
-	adv_data = generate_adv_data(client, &flags, &adv_data_len);
-	if (!adv_data || (adv_data_len > calc_max_adv_len(client, flags))) {
-		error("Advertising data too long or couldn't be generated.");
-		return -EINVAL;
-	}
+    if(!client->adv_data || !client->adv_data_len)
+    {
+        adv_data = generate_adv_data(client, &flags, &adv_data_len);
+        if (!adv_data || (adv_data_len > calc_max_adv_len(client, flags))) {
+            error("Advertising data too long or couldn't be generated.");
+            return -EINVAL;
+        }
+    }
+    else
+    {
+        adv_data = malloc0(client->adv_data_len);
+        memcpy(adv_data, client->adv_data, client->adv_data_len);
+        adv_data_len = client->adv_data_len;
+    }
 
-	scan_rsp = generate_scan_rsp(client, &flags, &scan_rsp_len);
-	if (!scan_rsp && scan_rsp_len) {
-		error("Scan data couldn't be generated.");
-		free(adv_data);
-		return -EINVAL;
-	}
+    if(!client->scan_rsp || !client->scan_rsp_len)
+    {
+        scan_rsp = generate_scan_rsp(client, &flags, &scan_rsp_len);
+        if (!scan_rsp && scan_rsp_len) {
+            error("Scan data couldn't be generated.");
+            free(adv_data);
+            return -EINVAL;
+        }
+    }
+    else
+    {
+        scan_rsp = malloc0(client->scan_rsp_len);
+        memcpy(scan_rsp, client->scan_rsp, client->scan_rsp_len);
+        scan_rsp_len = client->scan_rsp_len;
+    }
 
 	param_len = sizeof(struct mgmt_cp_add_advertising) + adv_data_len +
 							scan_rsp_len;
@@ -916,6 +938,130 @@ static bool parse_secondary(DBusMessageIter *iter,
 	return false;
 }
 
+static bool parse_advertising_raw_data(DBusMessageIter *iter, struct btd_adv_client *client)
+{
+	DBusMessageIter entries;
+
+	if (!iter) {
+		bt_ad_clear_data(client->data);
+		return true;
+	}
+
+	if (dbus_message_iter_get_arg_type(iter) != DBUS_TYPE_ARRAY)
+		return false;
+
+	dbus_message_iter_recurse(iter, &entries);
+
+	bt_ad_clear_data(client->data);
+
+	while (dbus_message_iter_get_arg_type(&entries)
+						== DBUS_TYPE_DICT_ENTRY) {
+		DBusMessageIter value, entry, array;
+		uint8_t type;
+		uint8_t *data;
+		int len;
+
+		dbus_message_iter_recurse(&entries, &entry);
+		dbus_message_iter_get_basic(&entry, &type);
+
+		dbus_message_iter_next(&entry);
+
+		if (dbus_message_iter_get_arg_type(&entry) != DBUS_TYPE_VARIANT)
+			goto fail;
+
+		dbus_message_iter_recurse(&entry, &value);
+
+		if (dbus_message_iter_get_arg_type(&value) != DBUS_TYPE_ARRAY)
+			goto fail;
+
+		dbus_message_iter_recurse(&value, &array);
+
+		if (dbus_message_iter_get_arg_type(&array) != DBUS_TYPE_BYTE)
+			goto fail;
+
+		dbus_message_iter_get_fixed_array(&array, &data, &len);
+
+		DBG("Adding Data for type 0x%02x len %u", type, len);
+
+        free(client->adv_data);
+        client->adv_data = malloc0(len);
+        memcpy(client->adv_data, data, len);
+        client->adv_data_len = len;
+
+		dbus_message_iter_next(&entries);
+	}
+
+	return true;
+
+fail:
+    free(client->adv_data);
+    client->adv_data = NULL;
+    client->adv_data_len = 0;
+	return false;
+}
+
+static bool parse_response_raw_data(DBusMessageIter *iter, struct btd_adv_client *client)
+{
+	DBusMessageIter entries;
+
+	if (!iter) {
+		bt_ad_clear_data(client->data);
+		return true;
+	}
+
+	if (dbus_message_iter_get_arg_type(iter) != DBUS_TYPE_ARRAY)
+		return false;
+
+	dbus_message_iter_recurse(iter, &entries);
+
+	bt_ad_clear_data(client->data);
+
+	while (dbus_message_iter_get_arg_type(&entries)
+						== DBUS_TYPE_DICT_ENTRY) {
+		DBusMessageIter value, entry, array;
+		uint8_t type;
+		uint8_t *data;
+		int len;
+
+		dbus_message_iter_recurse(&entries, &entry);
+		dbus_message_iter_get_basic(&entry, &type);
+
+		dbus_message_iter_next(&entry);
+
+		if (dbus_message_iter_get_arg_type(&entry) != DBUS_TYPE_VARIANT)
+			goto fail;
+
+		dbus_message_iter_recurse(&entry, &value);
+
+		if (dbus_message_iter_get_arg_type(&value) != DBUS_TYPE_ARRAY)
+			goto fail;
+
+		dbus_message_iter_recurse(&value, &array);
+
+		if (dbus_message_iter_get_arg_type(&array) != DBUS_TYPE_BYTE)
+			goto fail;
+
+		dbus_message_iter_get_fixed_array(&array, &data, &len);
+
+		DBG("Adding Data for type 0x%02x len %u", type, len);
+
+        free(client->scan_rsp);
+        client->scan_rsp = malloc0(len);
+        memcpy(client->scan_rsp , data, len);
+        client->scan_rsp_len = len;
+
+		dbus_message_iter_next(&entries);
+	}
+
+	return true;
+
+fail:
+    free(client->scan_rsp);
+    client->scan_rsp = NULL;
+    client->scan_rsp_len = 0;
+	return false;
+}
+
 static struct adv_parser {
 	const char *name;
 	bool (*func)(DBusMessageIter *iter, struct btd_adv_client *client);
@@ -934,6 +1080,8 @@ static struct adv_parser {
 	{ "Discoverable", parse_discoverable },
 	{ "DiscoverableTimeout", parse_discoverable_timeout },
 	{ "SecondaryChannel", parse_secondary },
+    { "AdvertisingRawData", parse_advertising_raw_data },
+    { "ResponseRawData", parse_response_raw_data },
 	{ },
 };
 

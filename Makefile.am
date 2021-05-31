@@ -308,6 +308,7 @@ include Makefile.tools
 include Makefile.obexd
 include android/Makefile.am
 include Makefile.mesh
+include Makefile.expand
 
 if HID2HCI
 rulesdir = $(UDEV_DIR)/rules.d

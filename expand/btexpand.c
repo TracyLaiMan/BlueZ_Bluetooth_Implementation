@@ -1,0 +1,46 @@
+#include "hal/ble_api.h"
+#include "hal/ms_hal_ble.h"
+#include "hal/ms_hal.h"
+#include "hal/ms_hal_hw.h"
+#include "hal/ms_hal_flash.h"
+#include "hal/ms_hal_timer.h"
+#include "hal/ms_hal_watchdog.h"
+
+#include <unistd.h>
+
+int main(int argc, char *argv[])
+{
+    ms_hal_ble_stack_start();
+
+    usleep(1 * 1000 * 1000);
+
+    uint8_t adv_data[] = {
+        0x02, 0x01, 0x06,
+        0x1A, 0xFF, 0x4C, 0x00, 0x02, 0x15, 0x02, 0x12, 0x23, 0x34, 0x54, 0x56, 0x67, 0x78, 0x89, 0x9A, 0xAB, 0xBC, 0xCD, 0xDE, 0xEF, 0xF0, 0x10, 0x00, 0x10, 0x80, 0xC3
+    };
+
+    uint8_t scan_rsp[] = {
+        0x03, 0x19, 0x00, 0x00,
+        0x02, 0x0A, 0x04,
+        0x03, 0x03, 0x12, 0x18,
+        0x13, 0x08, 0x48, 0x42, 0x33, 0x31, 0x30, 0x30, 0x30, 0x39, 0x35, 0x33, 0x35, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31
+    };
+    
+    ms_hal_ble_adv_data(adv_data, sizeof(adv_data), scan_rsp, sizeof(scan_rsp));
+
+    ms_hal_ble_adv_start();
+
+    while(1)
+    {
+        usleep(1 * 1000 * 1000);
+
+        adv_data[sizeof(adv_data)-1]++;
+        scan_rsp[sizeof(scan_rsp)-1] = (scan_rsp[sizeof(scan_rsp)-1] + 1) % 10 + '0';
+
+        ms_hal_ble_adv_data(adv_data, sizeof(adv_data), scan_rsp, sizeof(scan_rsp));
+
+    }
+
+    return 0;
+}
+

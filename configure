@@ -662,6 +662,8 @@ READLINE_FALSE
 READLINE_TRUE
 CLIENT_FALSE
 CLIENT_TRUE
+EXPAND_FALSE
+EXPAND_TRUE
 LIBSHARED_ELL_FALSE
 LIBSHARED_ELL_TRUE
 EXTERNAL_ELL_FALSE
@@ -907,6 +909,7 @@ enable_obex
 enable_btpclient
 enable_external_ell
 enable_client
+enable_expand
 enable_systemd
 with_systemdsystemunitdir
 with_systemduserunitdir
@@ -1620,6 +1623,7 @@ Optional Features:
   --enable-btpclient      enable BTP client
   --enable-external-ell   enable external Embedded Linux library
   --disable-client        disable command line client
+  --disable-expand        disavle expand
   --disable-systemd       disable systemd integration
   --disable-datafiles     do not install configuration and data files
   --enable-manpages       enable building of manual pages
@@ -14744,6 +14748,18 @@ else
   CLIENT_FALSE=
 fi
 
+# Check whether --enable-client was given.
+if test "${enable_expand+set}" = set; then :
+  enableval=$enable_expand; enable_expand=${enableval}
+fi
+
+ if test "${enable_expand}" != "no"; then
+  EXPAND_TRUE=
+  EXPAND_FALSE='#'
+else
+  EXPAND_TRUE='#'
+  EXPAND_FALSE=
+fi
 
 if (test "${enable_client}" != "no" || test "${enable_mesh}" = "yes"); then
         for ac_header in readline/readline.h
@@ -15377,6 +15393,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${CLIENT_TRUE}" && test -z "${CLIENT_FALSE}"; then
   as_fn_error $? "conditional \"CLIENT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${EXPAND_TRUE}" && test -z "${EXPAND_FALSE}"; then
+  as_fn_error $? "conditional \"EXPAND\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${READLINE_TRUE}" && test -z "${READLINE_FALSE}"; then

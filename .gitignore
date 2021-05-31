@@ -70,4 +70,4 @@ tools/rtlfw
 tools/scotest
 tools/seq2bseq
 tools/test-runner
-
+expand/btexpand
