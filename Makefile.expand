@@ -1,0 +1,17 @@
+
+bin_PROGRAMS += expand/btexpand
+
+expand_btexpand_SOURCES = expand/hal/hal_ble.c \
+						  expand/hal/hal_hw.c \
+						  expand/hal/hal_flash.c \
+						  expand/hal/hal_timer.c \
+						  expand/hal/hal_watchdog.c \
+						  expand/impl/advertising.c \
+						  expand/btexpand.c
+
+expand_btexpand_LDADD = gdbus/libgdbus-internal.la src/libshared-glib.la \
+				$(GLIB_LIBS) $(DBUS_LIBS) -lpthread
+
+CLEANFILES += tools/bluetooth-logger.service
+EXTRA_DIST += tools/bluetooth-logger.service.in
+
