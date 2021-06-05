@@ -176,7 +176,7 @@ static const GDBusPropertyTable ad_props[] = {
 void ad_register(const char *type)
 {
     DBusConnection *conn = get_dbus_connection();
-    GDBusProxy *manager = get_adv_proxy(); 
+    GDBusProxy *manager = get_adapter()->ad_proxy; 
      
     DEBUG("%s\n", __func__);
 
@@ -235,7 +235,7 @@ static void unregister_reply(DBusMessage *message, void *user_data)
 void ad_unregister(void)
 {
     DBusConnection *conn = get_dbus_connection();
-    GDBusProxy *manager = get_adv_proxy();
+    GDBusProxy *manager = get_adapter()->ad_proxy;
 
 	if (!manager)
 		ad_release(conn);

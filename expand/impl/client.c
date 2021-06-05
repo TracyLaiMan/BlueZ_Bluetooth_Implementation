@@ -13,9 +13,11 @@
 #include "src/shared/mainloop.h"
 #include "gdbus/gdbus.h"
 #include "client.h"
+#include "gatt.h"
 #include "advertising.h"
+#include "impl_private.h"
 
-/* #define CLIENT_DEBUG */ 
+/* #define CLIENT_DEBUG */
 
 #ifdef CLIENT_DEBUG
 #include "../hal/ms_hal_hw.h"
@@ -29,12 +31,6 @@
 static DBusConnection *dbus_conn;
 static GDBusProxy *agent_manager;
 static GDBusClient *client;
-
-struct adapter {
-	GDBusProxy *proxy;
-	GDBusProxy *ad_proxy;
-	GList *devices;
-};
 
 static struct adapter *default_ctrl;
 static GDBusProxy *default_dev;
@@ -486,14 +482,14 @@ static void proxy_added(GDBusProxy *proxy, void *user_data)
                             */
 		}
 	} else if (!strcmp(interface, "org.bluez.GattService1")) {
-		/* if (service_is_child(proxy)) */
-		/* 	gatt_add_service(proxy); */
+		if (service_is_child(proxy))
+			gatt_add_service(proxy);
 	} else if (!strcmp(interface, "org.bluez.GattCharacteristic1")) {
-		/* gatt_add_characteristic(proxy); */
+		gatt_add_characteristic(proxy);
 	} else if (!strcmp(interface, "org.bluez.GattDescriptor1")) {
-		/* gatt_add_descriptor(proxy); */
+		gatt_add_descriptor(proxy);
 	} else if (!strcmp(interface, "org.bluez.GattManager1")) {
-		/* gatt_add_manager(proxy); */
+		gatt_add_manager(proxy);
 	} else if (!strcmp(interface, "org.bluez.LEAdvertisingManager1")) {
 		ad_manager_added(proxy);
 	}
@@ -556,6 +552,8 @@ static void proxy_removed(GDBusProxy *proxy, void *user_data)
 
 	interface = g_dbus_proxy_get_interface(proxy);
 
+	DEBUG("remove interface: %s\n", interface);
+
 	if (!strcmp(interface, "org.bluez.Device1")) {
 		device_removed(proxy);
 	} else if (!strcmp(interface, "org.bluez.Adapter1")) {
@@ -567,22 +565,22 @@ static void proxy_removed(GDBusProxy *proxy, void *user_data)
 			/* 	agent_unregister(dbus_conn, NULL); */
 		}
 	} else if (!strcmp(interface, "org.bluez.GattService1")) {
-        /* gatt_remove_service(proxy); */
+        gatt_remove_service(proxy);
 
         if (default_attr == proxy)
             set_default_attribute(NULL);
     } else if (!strcmp(interface, "org.bluez.GattCharacteristic1")) {
-		/* gatt_remove_characteristic(proxy); */
+		gatt_remove_characteristic(proxy);
 
 		if (default_attr == proxy)
 			set_default_attribute(NULL);
 	} else if (!strcmp(interface, "org.bluez.GattDescriptor1")) {
-		/* gatt_remove_descriptor(proxy); */
+		gatt_remove_descriptor(proxy);
 
 		if (default_attr == proxy)
 			set_default_attribute(NULL);
 	} else if (!strcmp(interface, "org.bluez.GattManager1")) {
-		/* gatt_remove_manager(proxy); */
+		gatt_remove_manager(proxy);
 	} else if (!strcmp(interface, "org.bluez.LEAdvertisingManager1")) {
 		ad_unregister();
 	}
@@ -736,8 +734,6 @@ static void select_adapter(const char *mac_addr)
 	return ;
 }
 
-
-
 static void client_ready(GDBusClient *client, void *user_data)
 {
     DEBUG("client_ready\n");
@@ -802,7 +798,8 @@ DBusConnection *get_dbus_connection(void)
     return dbus_conn;
 }
 
-GDBusProxy *get_adv_proxy(void)
+struct adapter *get_adapter(void)
 {
-    return default_ctrl->ad_proxy;
+    return default_ctrl;
 }
+
