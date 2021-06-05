@@ -27,7 +27,7 @@
 
 #define MAX_ATTR_VAL_LEN	512
 
-/* #define GATT_DEBUG */
+//#define GATT_DEBUG
 
 #ifdef GATT_DEBUG
 #include "../hal/ms_hal_hw.h"
@@ -86,6 +86,7 @@ static GList *descriptors;
 static GList *managers;
 static GList *uuids;
 static DBusMessage *pending_message = NULL;
+static data_operator_callback_t data_op_callback;
 
 struct sock_io {
 	GDBusProxy *proxy;
@@ -97,6 +98,11 @@ static struct sock_io write_io;
 static struct sock_io notify_io;
 
 static struct chrc *chrc_find(const char *pattern);
+
+void gatt_set_data_op_callback(data_operator_callback_t cb)
+{
+	data_op_callback = cb;
+}
 
 static void print_service(struct service *service, const char *description)
 {
@@ -641,25 +647,18 @@ static void read_attribute(GDBusProxy *proxy, uint16_t offset)
 	DEBUG("Attempting to read %s\n", g_dbus_proxy_get_path(proxy));
 }
 
-void gatt_read_attribute(const char *uuid, int argc, char *argv[])
+void gatt_read_update_attribute(const char *uuid, uint8_t *data, uint16_t length)
 {
-	GDBusProxy *proxy = chrc_find(uuid)->proxy;
-	const char *iface;
-	uint16_t offset = 0;
-
-	iface = g_dbus_proxy_get_interface(proxy);
-	if (!strcmp(iface, "org.bluez.GattCharacteristic1") ||
-				!strcmp(iface, "org.bluez.GattDescriptor1")) {
-
-		if (argc == 2)
-			offset = atoi(argv[1]);
-
-		read_attribute(proxy, offset);
+	DBusConnection *conn = get_dbus_connection();
+	struct chrc *chrc = chrc_find(uuid);
+	if(!chrc)
 		return;
-	}
 
-	DEBUG("Unable to read attribute %s\n",
-						g_dbus_proxy_get_path(proxy));
+	chrc->value = g_memdup(data, length);
+	chrc->value_len = length;
+
+	g_dbus_emit_property_changed(conn, chrc->path, CHRC_INTERFACE, "Value");
+
 	return ;
 }
 
@@ -1821,6 +1820,7 @@ static int parse_options(DBusMessageIter *iter, uint16_t *offset, uint16_t *mtu,
 		dbus_message_iter_recurse(&entry, &value);
 
 		var = dbus_message_iter_get_arg_type(&value);
+
 		if (strcasecmp(key, "offset") == 0) {
 			if (var != DBUS_TYPE_UINT16)
 				return -EINVAL;
@@ -1851,7 +1851,6 @@ static int parse_options(DBusMessageIter *iter, uint16_t *offset, uint16_t *mtu,
 				*prep_authorize = !!tmp;
 			}
 		}
-
 		dbus_message_iter_next(&dict);
 	}
 
@@ -2064,6 +2063,8 @@ static DBusMessage *chrc_read_value(DBusConnection *conn, DBusMessage *msg,
 	if (offset > chrc->value_len)
 		return g_dbus_create_error(msg, "org.bluez.Error.InvalidOffset",
 									NULL);
+	if(data_op_callback)
+		data_op_callback(chrc->uuid, DATA_OP_READ, &chrc->value[offset], chrc->value_len - offset);
 
 	return read_value(msg, &chrc->value[offset], chrc->value_len - offset);
 }
@@ -2240,6 +2241,8 @@ static DBusMessage *chrc_write_value(DBusConnection *conn, DBusMessage *msg,
 			path_to_address(device), offset, link);
 
 	DEBUG_HEXDUMP(value, value_len);
+	if(data_op_callback)
+		data_op_callback(chrc->uuid, DATA_OP_WRITE, value, value_len);
 
 	if (chrc->proxy)
 		return proxy_write_value(chrc->proxy, msg, value, value_len,
@@ -2389,16 +2392,6 @@ static DBusMessage *chrc_acquire_notify(DBusConnection *conn, DBusMessage *msg,
 		g_dbus_emit_property_changed(conn, chrc->path, CHRC_INTERFACE,
 							"NotifyAcquired");
 	}
-	
-	uint8_t value[10] = "12345";
-	
-	if (write_value(&chrc->value_len, &chrc->value, value, strlen(value),
-					0, chrc->max_val_len))
-
-	DEBUG("Attribute %s (%s) notify\n",
-			chrc->path, bt_uuidstr_to_str(chrc->uuid));
-
-	g_dbus_emit_property_changed(conn, chrc->path, CHRC_INTERFACE, "Value");
 
 	return reply;
 }
@@ -2630,13 +2623,13 @@ static struct chrc *chrc_find(const char *pattern)
 	return NULL;
 }
 
-void gatt_unregister_chrc(int argc, char *argv[])
+void gatt_unregister_chrc(const char *uuid)
 {
 	DBusConnection *conn = get_dbus_connection();
 	GDBusProxy *proxy = get_adapter()->proxy;
 	struct chrc *chrc;
 
-	chrc = chrc_find(argv[1]);
+	chrc = chrc_find(uuid);
 	if (!chrc) {
 		DEBUG("Failed to unregister characteristic object\n");
 		return ;
@@ -2838,7 +2831,7 @@ static void desc_set_value(const char *input, void *user_data)
 	desc->max_val_len = desc->value_len;
 }
 
-void gatt_register_desc(int argc, char *argv[])
+void gatt_register_desc(const char *uuid, const char *flags, uint16_t data_max_len)
 {
 	DBusConnection *conn = get_dbus_connection();
 	GDBusProxy *proxy = get_adapter()->proxy;
@@ -2859,13 +2852,12 @@ void gatt_register_desc(int argc, char *argv[])
 
 	desc = g_new0(struct desc, 1);
 	desc->chrc = g_list_last(service->chrcs)->data;
-	desc->uuid = g_strdup(argv[1]);
+	desc->uuid = g_strdup(uuid);
 	desc->path = g_strdup_printf("%s/desc%u", desc->chrc->path,
 					g_list_length(desc->chrc->descs));
-	desc->flags = g_strsplit(argv[2], ",", -1);
-
-	if (argc > 3)
-		desc->handle = atoi(argv[3]);
+	desc->flags = g_strsplit(flags, ",", -1);
+	desc->value = g_memdup(NULL, data_max_len);
+	desc->max_val_len = data_max_len;
 
 	if (g_dbus_register_interface(conn, desc->path, DESC_INTERFACE,
 					desc_methods, NULL, desc_properties,
@@ -2914,13 +2906,13 @@ static struct desc *desc_find(const char *pattern)
 	return NULL;
 }
 
-void gatt_unregister_desc(int argc, char *argv[])
+void gatt_unregister_desc(const char *uuid)
 {
 	DBusConnection *conn = get_dbus_connection();
 	GDBusProxy *proxy = get_adapter()->proxy;
 	struct desc *desc;
 
-	desc = desc_find(argv[1]);
+	desc = desc_find(uuid);
 	if (!desc) {
 		DEBUG("Failed to unregister descriptor object\n");
 		return ;

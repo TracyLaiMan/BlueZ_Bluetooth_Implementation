@@ -16,6 +16,7 @@
 #include "gatt.h"
 #include "advertising.h"
 #include "impl_private.h"
+#include "../hal/ms_hal_hw.h"
 
 /* #define CLIENT_DEBUG */
 
@@ -37,6 +38,7 @@ static GDBusProxy *default_dev;
 static GDBusProxy *default_attr;
 static GList *ctrl_list;
 static pthread_t mainloop_tid;
+static ms_dev_ble_service_stack_callback_t *stack_event_handler;
 
 
 static void proxy_leak(gpointer data)
@@ -404,6 +406,8 @@ static void device_added(GDBusProxy *proxy)
 		return;
 	}
 
+	stack_event_update(MS_HAL_BLE_STACK_CONNCET, "address:", strlen("address:"));
+
 	adapter->devices = g_list_append(adapter->devices, proxy);
 	print_device(proxy, NULL);
 
@@ -515,6 +519,8 @@ static void device_removed(GDBusProxy *proxy)
 	}
 
 	adapter->devices = g_list_remove(adapter->devices, proxy);
+
+	stack_event_update(MS_HAL_BLE_STACK_DISCONNCET, "address", strlen("address"));
 
 	print_device(proxy, NULL);
 
@@ -741,8 +747,6 @@ static void client_ready(GDBusClient *client, void *user_data)
 
 static void signal_callback(int signum, void *user_data)
 {
-	static bool terminated = false;
-
 	switch (signum) {
 	case SIGINT:
 		/*
@@ -761,6 +765,7 @@ static void signal_callback(int signum, void *user_data)
 
 static void *client_mainloop(void *arg)
 {
+	stack_event_update(MS_HAL_BLE_STACK_INIT, NULL, 0);
     mainloop_run_with_signal(signal_callback, NULL);
 
 	g_dbus_client_unref(client);
@@ -793,6 +798,30 @@ int client_init(void)
     return pthread_create(&mainloop_tid, NULL, client_mainloop, NULL);
 }
 
+int client_unint(void)
+{
+	mainloop_quit();
+	ms_hal_ble_free(stack_event_update);
+	pthread_join(mainloop_tid, NULL);
+	return 0;
+}
+
+int client_set_event_handler(ms_dev_ble_service_stack_callback_t *callback, uint16_t callback_count)
+{
+	if(!callback_count || !callback)
+		return -1;
+
+	if(stack_event_handler)
+		ms_hal_ble_free(stack_event_handler);
+
+	stack_event_handler = ms_hal_ble_malloc(sizeof(ms_dev_ble_service_stack_callback_t) * (callback_count + 1));
+	for(int i = 0; i < callback_count; i++)
+		stack_event_handler[i] = callback[i];
+	stack_event_handler[callback_count] = NULL;
+
+	return 0;
+}
+
 DBusConnection *get_dbus_connection(void)
 {
     return dbus_conn;
@@ -803,3 +832,16 @@ struct adapter *get_adapter(void)
     return default_ctrl;
 }
 
+int stack_event_update(ms_hal_ble_stack_state_e event, void *data, uint16_t len)
+{
+	if(!stack_event_handler)
+		return 0;
+	uint16_t index = 0;
+	while(stack_event_handler[index])
+	{
+		(stack_event_handler[index])(event, data, len);
+		index++;
+	}
+	
+	return 0;
+}

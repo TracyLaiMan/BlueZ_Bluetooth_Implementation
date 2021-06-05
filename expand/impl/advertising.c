@@ -92,6 +92,7 @@ static void register_reply(DBusMessage *message, void *user_data)
 	if (dbus_set_error_from_message(&error, message) == FALSE) {
 		ad.registered = true;
 		DEBUG("Advertising object registered\n");
+		stack_event_update(MS_HAL_BLE_STACK_ADV_ON, NULL, 0);
 		print_ad();
 		/* Leave advertise running even on noninteractive mode */
 	} else {
@@ -223,6 +224,8 @@ static void unregister_reply(DBusMessage *message, void *user_data)
 							AD_IFACE) == FALSE)
 			DEBUG("Failed to unregister advertising"
 					" object\n");
+
+		stack_event_update(MS_HAL_BLE_STACK_ADV_OFF, NULL, 0);
 		return ;
 	} else {
 		DEBUG("Failed to unregister advertisement: %s\n",
