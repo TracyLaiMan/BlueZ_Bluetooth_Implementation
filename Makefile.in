@@ -861,7 +861,8 @@ am__expand_btexpand_SOURCES_DIST = expand/btexpand.c \
 	expand/hal/hal_timer.c expand/hal/ms_hal_flash.h expand/hal/ms_hal_timer.h \
 	expand/hal/hal_watchdog.c expand/hal/ms_hal_watchdog.h \
 	expand/impl/advertising.c expand/impl/advertising.h \
-	expand/impl/client.c expand/impl/client.h expand/impl/impl_private.h 
+	expand/impl/client.c expand/impl/client.h expand/impl/impl_private.h \
+	expand/impl/gatt.c expand/impl/gatt.h
 
 @EXPAND_TRUE@am_expand_btexpand_OBJECTS = expand/btexpand.$(OBJEXT) \
 @EXPAND_TRUE@	expand/hal/hal_ble.$(OBJEXT) \
@@ -870,7 +871,9 @@ am__expand_btexpand_SOURCES_DIST = expand/btexpand.c \
 @EXPAND_TRUE@	expand/hal/hal_timer.$(OBJEXT) \
 @EXPAND_TRUE@	expand/hal/hal_watchdog.$(OBJEXT) \
 @EXPAND_TRUE@	expand/impl/advertising.$(OBJEXT) \
-@EXPAND_TRUE@	expand/impl/client.$(OBJEXT)
+@EXPAND_TRUE@	expand/impl/client.$(OBJEXT) \
+@EXPAND_TRUE@	expand/impl/gatt.$(OBJEXT)
+
 expand_btexpand_OBJECTS = $(am_expand_btexpand_OBJECTS)
 @EXPAND_TRUE@expand_btexpand_DEPENDENCIES =	\
 @EXPAND_TRUE@	gdbus/libgdbus-internal.la src/libshared-glib.la \
@@ -1945,9 +1948,10 @@ am__depfiles_remade = android/$(DEPDIR)/a2dp-sink.Po \
 	client/$(DEPDIR)/agent.Po client/$(DEPDIR)/display.Po \
 	client/$(DEPDIR)/gatt.Po client/$(DEPDIR)/main.Po \
 	expand/$(DEPDIR)/btexpand.Po expand/$(DEPDIR)/hal/hal_hw.Po \
-	expand/$(DEPDIR)/hal/hal_ble.Po expand/$(DEPDIR)/hal/hal_flash.Po \
-	expand/$(DEPDIR)/hal/hal_timer.Po expand/$(DEPDIR)/hal/hal_watchdog.Po \
-	expand/$(DEPDIR)/impl/advertising.Po expand/$(DEPDIR)/impl/client.Po \
+	expand/hal/$(DEPDIR)/hal_ble.Po expand/hal/$(DEPDIR)/hal_flash.Po \
+	expand/$(DEPDIR)/hal/hal_timer.Po expand/hal/$(DEPDIR)/hal_watchdog.Po \
+	expand/impl/$(DEPDIR)/advertising.Po expand/impl/$(DEPDIR)/client.Po \
+	expand/impl/$(DEPDIR)/gatt.Po \
 	ell/$(DEPDIR)/checksum.Plo ell/$(DEPDIR)/cipher.Plo \
 	ell/$(DEPDIR)/dbus-client.Plo ell/$(DEPDIR)/dbus-filter.Plo \
 	ell/$(DEPDIR)/dbus-message.Plo \
@@ -3163,6 +3167,7 @@ unit_tests = $(am__append_54) unit/test-eir unit/test-uuid \
 @EXPAND_TRUE@						   expand/hal/hal_timer.c \
 @EXPAND_TRUE@						   expand/hal/hal_watchdog.c \
 @EXPAND_TRUE@						   expand/impl/advertising.c \
+@EXPAND_TRUE@						   expand/impl/gatt.c \
 @EXPAND_TRUE@						   expand/btexpand.c
  
 @EXPAND_TRUE@expand_btexpand_LDADD = gdbus/libgdbus-internal.la src/libshared-glib.la \
@@ -4871,6 +4876,8 @@ expand/impl/$(DEPDIR)/$(am__dirstamp):
 expand/impl/advertising.$(OBJEXT): expand/impl/$(am__dirstamp) \
 	expand/impl/$(DEPDIR)/$(am__dirstamp)
 expand/impl/client.$(OBJEXT): expand/impl/$(am__dirstamp) \
+	expand/impl/$(DEPDIR)/$(am__dirstamp)
+expand/impl/gatt.$(OBJEXT): expand/impl/$(am__dirstamp) \
 	expand/impl/$(DEPDIR)/$(am__dirstamp)
 expand/btexpand$(EXEEXT): $(expand_btexpand_OBJECTS) $(expand_btexpand_DEPENDENCIES) expand/$(am__dirstamp) expand/hal/$(am__dirstamp) expand/impl/$(am__dirstamp)
 	@rm -f expand/btexpand$(EXEEXT)
@@ -6695,6 +6702,7 @@ distclean-compile:
 @EXPAND_TRUE@@am__include@ @am__quote@expand/hal/$(DEPDIR)/hal_watchdog.Po@am__quote@ # am--include-marker
 @EXPAND_TRUE@@am__include@ @am__quote@expand/impl/$(DEPDIR)/advertising.Po@am__quote@ # am--include-marker
 @EXPAND_TRUE@@am__include@ @am__quote@expand/impl/$(DEPDIR)/client.Po@am__quote@ # am--include-marker
+@EXPAND_TRUE@@am__include@ @am__quote@expand/impl/$(DEPDIR)/gatt.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -10780,6 +10788,7 @@ distclean: distclean-am
 	-rm -f expand/hal/$(DEPDIR)/hal_timer.Po
 	-rm -f expand/hal/$(DEPDIR)/hal_watchdog.Po
 	-rm -f expand/impl/$(DEPDIR)/advertising.Po
+	-rm -f expand/impl/$(DEPDIR)/gatt.Po
 	-rm -f expand/impl/$(DEPDIR)/client.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -11356,6 +11365,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f expand/hal/$(DEPDIR)/hal_timer.Po
 	-rm -f expand/hal/$(DEPDIR)/hal_watchdog.Po
 	-rm -f expand/impl/$(DEPDIR)/advertising.Po
+	-rm -f expand/impl/$(DEPDIR)/gatt.Po
 	-rm -f expand/impl/$(DEPDIR)/client.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic \
