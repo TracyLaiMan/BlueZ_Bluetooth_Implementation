@@ -92,7 +92,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
-	$(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_19)
+	$(am__EXEEXT_4) $(am__EXEEXT_5)
 noinst_PROGRAMS = $(am__EXEEXT_6) $(am__EXEEXT_7) $(am__EXEEXT_8) \
 	$(am__EXEEXT_9) $(am__EXEEXT_10) $(am__EXEEXT_11) \
 	$(am__EXEEXT_15)
@@ -243,7 +243,6 @@ pkglibexec_PROGRAMS = src/bluetoothd$(EXEEXT) $(am__EXEEXT_16) \
 TESTS = $(am__EXEEXT_14)
 @DBUS_RUN_SESSION_TRUE@am__append_63 = dbus-run-session --
 @MANPAGES_TRUE@am__append_64 = $(manual_pages)
-@EXPAND_TRUE@am__append_65 = expand/btexpand
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
@@ -351,7 +350,6 @@ am__EXEEXT_14 = $(am__EXEEXT_12) unit/test-eir$(EXEEXT) \
 @LOGGER_TRUE@am__EXEEXT_16 = tools/btmon-logger$(EXEEXT)
 @OBEX_TRUE@am__EXEEXT_17 = obexd/src/obexd$(EXEEXT)
 @MESH_TRUE@am__EXEEXT_18 = mesh/bluetooth-meshd$(EXEEXT)
-@EXPAND_TRUE@am__EXEEXT_19 = expand/btexpand$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(cups_PROGRAMS) $(noinst_PROGRAMS) \
 	$(pkglibexec_PROGRAMS) $(udev_PROGRAMS)
 LIBRARIES = $(noinst_LIBRARIES)
@@ -854,32 +852,6 @@ client_bluetoothctl_OBJECTS = $(am_client_bluetoothctl_OBJECTS)
 @CLIENT_TRUE@client_bluetoothctl_DEPENDENCIES =  \
 @CLIENT_TRUE@	gdbus/libgdbus-internal.la src/libshared-glib.la \
 @CLIENT_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am__expand_btexpand_SOURCES_DIST = expand/btexpand.c \
-    expand/hal/hal_ble.c expand/hal/ble_api.h \
-	expand/hal/hal_hw.c expand/hal/ms_hal.h \
-	expand/hal/hal_flash.c expand/hal/ms_hal_hw.h expand/hal/ms_hal_ble.h \
-	expand/hal/hal_timer.c expand/hal/ms_hal_flash.h expand/hal/ms_hal_timer.h \
-	expand/hal/hal_watchdog.c expand/hal/ms_hal_watchdog.h \
-	expand/impl/advertising.c expand/impl/advertising.h \
-	expand/impl/client.c expand/impl/client.h expand/impl/impl_private.h \
-	expand/impl/gatt.c expand/impl/gatt.h
-
-@EXPAND_TRUE@am_expand_btexpand_OBJECTS = expand/btexpand.$(OBJEXT) \
-@EXPAND_TRUE@	expand/hal/hal_ble.$(OBJEXT) \
-@EXPAND_TRUE@	expand/hal/hal_hw.$(OBJEXT) \
-@EXPAND_TRUE@	expand/hal/hal_flash.$(OBJEXT) \
-@EXPAND_TRUE@	expand/hal/hal_timer.$(OBJEXT) \
-@EXPAND_TRUE@	expand/hal/hal_watchdog.$(OBJEXT) \
-@EXPAND_TRUE@	expand/impl/advertising.$(OBJEXT) \
-@EXPAND_TRUE@	expand/impl/client.$(OBJEXT) \
-@EXPAND_TRUE@	expand/impl/gatt.$(OBJEXT)
-
-expand_btexpand_OBJECTS = $(am_expand_btexpand_OBJECTS)
-@EXPAND_TRUE@expand_btexpand_DEPENDENCIES =	\
-@EXPAND_TRUE@	gdbus/libgdbus-internal.la src/libshared-glib.la \
-@EXPAND_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-
-
 am__emulator_b1ee_SOURCES_DIST = emulator/b1ee.c
 @TESTING_TRUE@am_emulator_b1ee_OBJECTS = emulator/b1ee.$(OBJEXT)
 emulator_b1ee_OBJECTS = $(am_emulator_b1ee_OBJECTS)
@@ -1947,11 +1919,6 @@ am__depfiles_remade = android/$(DEPDIR)/a2dp-sink.Po \
 	btio/$(DEPDIR)/obexd-btio.Po client/$(DEPDIR)/advertising.Po \
 	client/$(DEPDIR)/agent.Po client/$(DEPDIR)/display.Po \
 	client/$(DEPDIR)/gatt.Po client/$(DEPDIR)/main.Po \
-	expand/$(DEPDIR)/btexpand.Po expand/$(DEPDIR)/hal/hal_hw.Po \
-	expand/hal/$(DEPDIR)/hal_ble.Po expand/hal/$(DEPDIR)/hal_flash.Po \
-	expand/$(DEPDIR)/hal/hal_timer.Po expand/hal/$(DEPDIR)/hal_watchdog.Po \
-	expand/impl/$(DEPDIR)/advertising.Po expand/impl/$(DEPDIR)/client.Po \
-	expand/impl/$(DEPDIR)/gatt.Po \
 	ell/$(DEPDIR)/checksum.Plo ell/$(DEPDIR)/cipher.Plo \
 	ell/$(DEPDIR)/dbus-client.Plo ell/$(DEPDIR)/dbus-filter.Plo \
 	ell/$(DEPDIR)/dbus-message.Plo \
@@ -2289,7 +2256,7 @@ SOURCES = $(android_audio_a2dp_default_la_SOURCES) \
 	$(emulator_b1ee_SOURCES) $(emulator_btvirt_SOURCES) \
 	$(emulator_hfp_SOURCES) $(mesh_bluetooth_meshd_SOURCES) \
 	$(monitor_btmon_SOURCES) $(obexd_src_obexd_SOURCES) \
-	$(nodist_obexd_src_obexd_SOURCES) $(expand_btexpand_SOURCES)\
+	$(nodist_obexd_src_obexd_SOURCES) \
 	$(peripheral_btsensor_SOURCES) \
 	$(profiles_cups_bluetooth_SOURCES) \
 	$(profiles_iap_iapd_SOURCES) $(src_bluetoothd_SOURCES) \
@@ -2359,7 +2326,6 @@ DIST_SOURCES = $(am__android_audio_a2dp_default_la_SOURCES_DIST) \
 	$(am__android_test_ipc_SOURCES_DIST) \
 	$(am__attrib_gatttool_SOURCES_DIST) \
 	$(am__client_bluetoothctl_SOURCES_DIST) \
-	$(am__expand_btexpand_SOURCES_DIST) \
 	$(am__emulator_b1ee_SOURCES_DIST) \
 	$(am__emulator_btvirt_SOURCES_DIST) \
 	$(am__emulator_hfp_SOURCES_DIST) \
@@ -2651,7 +2617,7 @@ TEST_LOG_COMPILE = $(TEST_LOG_COMPILER) $(AM_TEST_LOG_FLAGS) \
 am__DIST_COMMON = $(dist_man_MANS) $(srcdir)/Makefile.in \
 	$(srcdir)/Makefile.mesh $(srcdir)/Makefile.obexd \
 	$(srcdir)/Makefile.plugins $(srcdir)/Makefile.tools \
-	$(srcdir)/android/Makefile.am $(srcdir)/Makefile.expand $(srcdir)/config.h.in \
+	$(srcdir)/android/Makefile.am $(srcdir)/config.h.in \
 	$(top_srcdir)/lib/bluez.pc.in \
 	$(top_srcdir)/src/bluetoothd.8.in AUTHORS COPYING COPYING.LIB \
 	ChangeLog INSTALL NEWS README TODO compile config.guess \
@@ -3160,19 +3126,6 @@ unit_tests = $(am__append_54) unit/test-eir unit/test-uuid \
 
 @CLIENT_TRUE@client_bluetoothctl_LDADD = gdbus/libgdbus-internal.la src/libshared-glib.la \
 @CLIENT_TRUE@				$(GLIB_LIBS) $(DBUS_LIBS) -lreadline
-
-@EXPAND_TRUE@expand_btexpand_SOURCES = expand/hal/hal_ble.c \
-@EXPAND_TRUE@						   expand/hal/hal_hw.c \
-@EXPAND_TRUE@						   expand/hal/hal_flash.c \
-@EXPAND_TRUE@						   expand/hal/hal_timer.c \
-@EXPAND_TRUE@						   expand/hal/hal_watchdog.c \
-@EXPAND_TRUE@						   expand/impl/advertising.c \
-@EXPAND_TRUE@						   expand/impl/gatt.c \
-@EXPAND_TRUE@						   expand/btexpand.c
- 
-@EXPAND_TRUE@expand_btexpand_LDADD = gdbus/libgdbus-internal.la src/libshared-glib.la \
-@EXPAND_TRUE@				  $(GLIB_LIBS) $(DBUS_LIBS) -lpthread
- 
 
 @ZSH_COMPLETIONS_TRUE@zshcompletiondir = $(ZSH_COMPLETIONDIR)
 @ZSH_COMPLETIONS_TRUE@dist_zshcompletion_DATA = completion/zsh/_bluetoothctl
@@ -3948,7 +3901,7 @@ all: $(BUILT_SOURCES) config.h
 .SUFFIXES: .c .lo .log .o .obj .test .test$(EXEEXT) .trs
 am--refresh: Makefile
 	@:
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(srcdir)/Makefile.plugins $(srcdir)/Makefile.tools $(srcdir)/Makefile.obexd $(srcdir)/android/Makefile.am $(srcdir)/Makefile.expand $(srcdir)/Makefile.mesh $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(srcdir)/Makefile.plugins $(srcdir)/Makefile.tools $(srcdir)/Makefile.obexd $(srcdir)/android/Makefile.am $(srcdir)/Makefile.mesh $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -3970,7 +3923,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__maybe_remake_depfiles)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__maybe_remake_depfiles);; \
 	esac;
-$(srcdir)/Makefile.plugins $(srcdir)/Makefile.tools $(srcdir)/Makefile.obexd $(srcdir)/android/Makefile.am $(srcdir)/Makefile.expand $(srcdir)/Makefile.mesh $(am__empty):
+$(srcdir)/Makefile.plugins $(srcdir)/Makefile.tools $(srcdir)/Makefile.obexd $(srcdir)/android/Makefile.am $(srcdir)/Makefile.mesh $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
@@ -4842,47 +4795,6 @@ client/gatt.$(OBJEXT): client/$(am__dirstamp) \
 client/bluetoothctl$(EXEEXT): $(client_bluetoothctl_OBJECTS) $(client_bluetoothctl_DEPENDENCIES) $(EXTRA_client_bluetoothctl_DEPENDENCIES) client/$(am__dirstamp)
 	@rm -f client/bluetoothctl$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(client_bluetoothctl_OBJECTS) $(client_bluetoothctl_LDADD) $(LIBS)
-
-expand/$(am__dirstamp):
-	@$(MKDIR_P) expand
-	@: > expand/$(am__dirstamp)
-expand/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) expand/$(DEPDIR)
-	@: > expand/$(DEPDIR)/$(am__dirstamp)
-expand/btexpand.$(OBJEXT): expand/$(am__dirstamp) \
-	expand/$(DEPDIR)/$(am__dirstamp)
-expand/hal/$(am__dirstamp):
-	@$(MKDIR_P) expand/hal
-	@: > expand/hal/$(am__dirstamp)
-expand/hal/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) expand/hal/$(DEPDIR)
-	@: > expand/hal/$(DEPDIR)/$(am__dirstamp)
-expand/hal/hal_hw.$(OBJEXT): expand/hal/$(am__dirstamp) \
-	expand/hal/$(DEPDIR)/$(am__dirstamp)
-expand/hal/hal_ble.$(OBJEXT): expand/hal/$(am__dirstamp) \
-	expand/hal/$(DEPDIR)/$(am__dirstamp)
-expand/hal/hal_flash.$(OBJEXT): expand/hal/$(am__dirstamp) \
-	expand/hal/$(DEPDIR)/$(am__dirstamp)
-expand/hal/hal_watchdog.$(OBJEXT): expand/hal/$(am__dirstamp) \
-	expand/hal/$(DEPDIR)/$(am__dirstamp)
-expand/hal/hal_timer.$(OBJEXT): expand/hal/$(am__dirstamp) \
-	expand/hal/$(DEPDIR)/$(am__dirstamp)
-expand/impl/$(am__dirstamp):
-	@$(MKDIR_P) expand/impl
-	@: > expand/impl/$(am__dirstamp)
-expand/impl/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) expand/impl/$(DEPDIR)
-	@: > expand/impl/$(DEPDIR)/$(am__dirstamp)
-expand/impl/advertising.$(OBJEXT): expand/impl/$(am__dirstamp) \
-	expand/impl/$(DEPDIR)/$(am__dirstamp)
-expand/impl/client.$(OBJEXT): expand/impl/$(am__dirstamp) \
-	expand/impl/$(DEPDIR)/$(am__dirstamp)
-expand/impl/gatt.$(OBJEXT): expand/impl/$(am__dirstamp) \
-	expand/impl/$(DEPDIR)/$(am__dirstamp)
-expand/btexpand$(EXEEXT): $(expand_btexpand_OBJECTS) $(expand_btexpand_DEPENDENCIES) expand/$(am__dirstamp) expand/hal/$(am__dirstamp) expand/impl/$(am__dirstamp)
-	@rm -f expand/btexpand$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(expand_btexpand_OBJECTS) $(expand_btexpand_LDADD) $(LIBS)
-
 emulator/b1ee.$(OBJEXT): emulator/$(am__dirstamp) \
 	emulator/$(DEPDIR)/$(am__dirstamp)
 
@@ -6172,9 +6084,6 @@ mostlyclean-compile:
 	-rm -f tools/*.$(OBJEXT)
 	-rm -f tools/mesh/*.$(OBJEXT)
 	-rm -f tools/parser/*.$(OBJEXT)
-	-rm -f expand/*.$(OBJEXT)
-	-rm -f expand/hal/*.$(OBJEXT)
-	-rm -f expand/impl/*.$(OBJEXT)
 	-rm -f unit/*.$(OBJEXT)
 
 distclean-compile:
@@ -6694,15 +6603,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/test-uuid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/test_midi-test-midi.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@unit/$(DEPDIR)/util.Po@am__quote@ # am--include-marker
-@EXPAND_TRUE@@am__include@ @am__quote@expand/$(DEPDIR)/btexpand.Po@am__quote@ # am--include-marker
-@EXPAND_TRUE@@am__include@ @am__quote@expand/hal/$(DEPDIR)/hal_hw.Po@am__quote@ # am--include-marker
-@EXPAND_TRUE@@am__include@ @am__quote@expand/hal/$(DEPDIR)/hal_ble.Po@am__quote@ # am--include-marker
-@EXPAND_TRUE@@am__include@ @am__quote@expand/hal/$(DEPDIR)/hal_flash.Po@am__quote@ # am--include-marker
-@EXPAND_TRUE@@am__include@ @am__quote@expand/hal/$(DEPDIR)/hal_timer.Po@am__quote@ # am--include-marker
-@EXPAND_TRUE@@am__include@ @am__quote@expand/hal/$(DEPDIR)/hal_watchdog.Po@am__quote@ # am--include-marker
-@EXPAND_TRUE@@am__include@ @am__quote@expand/impl/$(DEPDIR)/advertising.Po@am__quote@ # am--include-marker
-@EXPAND_TRUE@@am__include@ @am__quote@expand/impl/$(DEPDIR)/client.Po@am__quote@ # am--include-marker
-@EXPAND_TRUE@@am__include@ @am__quote@expand/impl/$(DEPDIR)/gatt.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -9236,7 +9136,6 @@ clean-libtool:
 	-rm -rf src/shared/.libs src/shared/_libs
 	-rm -rf tools/.libs tools/_libs
 	-rm -rf unit/.libs unit/_libs
-	-rm -rf expand/.libs expand/hal/.libs expand/impl/.libs
 
 distclean-libtool:
 	-rm -f libtool config.lt
@@ -10244,12 +10143,6 @@ distclean-generic:
 	-rm -f tools/parser/$(am__dirstamp)
 	-rm -f unit/$(DEPDIR)/$(am__dirstamp)
 	-rm -f unit/$(am__dirstamp)
-	-rm -f expand/$(DEPDIR)/$(am__dirstamp)
-	-rm -f expand/$(am__dirstamp)
-	-rm -f expand/hal/$(DEPDIR)/$(am__dirstamp)
-	-rm -f expand/hal/$(am__dirstamp)
-	-rm -f expand/impl/$(DEPDIR)/$(am__dirstamp)
-	-rm -f expand/impl/$(am__dirstamp)
 	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
@@ -10781,15 +10674,6 @@ distclean: distclean-am
 	-rm -f unit/$(DEPDIR)/test-uuid.Po
 	-rm -f unit/$(DEPDIR)/test_midi-test-midi.Po
 	-rm -f unit/$(DEPDIR)/util.Po
-	-rm -f expand/$(DEPDIR)/btexpand.Po
-	-rm -f expand/hal/$(DEPDIR)/hal_hw.Po
-	-rm -f expand/hal/$(DEPDIR)/hal_ble.Po
-	-rm -f expand/hal/$(DEPDIR)/hal_flash.Po
-	-rm -f expand/hal/$(DEPDIR)/hal_timer.Po
-	-rm -f expand/hal/$(DEPDIR)/hal_watchdog.Po
-	-rm -f expand/impl/$(DEPDIR)/advertising.Po
-	-rm -f expand/impl/$(DEPDIR)/gatt.Po
-	-rm -f expand/impl/$(DEPDIR)/client.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags
@@ -11358,15 +11242,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f unit/$(DEPDIR)/test-uuid.Po
 	-rm -f unit/$(DEPDIR)/test_midi-test-midi.Po
 	-rm -f unit/$(DEPDIR)/util.Po
-	-rm -f expand/$(DEPDIR)/btexpand.Po
-	-rm -f expand/hal/$(DEPDIR)/hal_hw.Po
-	-rm -f expand/hal/$(DEPDIR)/hal_ble.Po
-	-rm -f expand/hal/$(DEPDIR)/hal_flash.Po
-	-rm -f expand/hal/$(DEPDIR)/hal_timer.Po
-	-rm -f expand/hal/$(DEPDIR)/hal_watchdog.Po
-	-rm -f expand/impl/$(DEPDIR)/advertising.Po
-	-rm -f expand/impl/$(DEPDIR)/gatt.Po
-	-rm -f expand/impl/$(DEPDIR)/client.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic \
 	maintainer-clean-local
